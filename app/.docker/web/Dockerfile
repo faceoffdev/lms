@@ -1,17 +1,33 @@
-FROM node:20-slim AS base
+ARG NODE_VERSION=20
+FROM node:${NODE_VERSION}-slim AS build
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY .. /app
+
 WORKDIR /app
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+COPY ./package.json /app/
+COPY ./pnpm-lock.yaml /app/
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm install --shamefully-hoist
+
+COPY . ./
+
+ARG API_URL=https://lms-api.tradeonix.ru
+
 RUN pnpm run build
 
-FROM base
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app/dist /app/dist
+
+FROM node:${NODE_VERSION}-slim
+
+WORKDIR /app
+
+COPY --from=build /app/.output ./
+
+ENV HOST=0.0.0.0
+ENV NODE_ENV=production
+
+EXPOSE 3000
+
+CMD ["node", "/app/server/index.mjs"]

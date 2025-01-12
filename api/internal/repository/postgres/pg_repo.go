@@ -146,6 +146,10 @@ type AggCriteria struct {
 }
 
 func (r *postgresRepo) getScoresForStudent(ctx context.Context, groupId int, lessonIds []int) (LessonScoresByStudent, error) {
+	if len(lessonIds) == 0 {
+		return nil, nil
+	}
+
 	args := make([]interface{}, len(lessonIds)+2)
 	args[0] = groupId
 	args[1] = groupId
