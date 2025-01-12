@@ -30,7 +30,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: ./app/.docker/web/Dockerfile
+          context: ./app
+          file: ./.docker/web/Dockerfile
           tags: ghcr.io/${{ github.repository }}/app:latest
           platforms: linux/amd64
           push: true
@@ -57,7 +58,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: ./api/.docker/web/Dockerfile
+          context: ./api
+          file: ./.docker/web/Dockerfile
           tags: ghcr.io/${{ github.repository }}/api:latest
           platforms: linux/amd64
           push: true
