@@ -1,0 +1,168 @@
+<script setup lang="ts">
+import type { RatingChangeEvent } from "primevue";
+
+const { $config } = useNuxtApp();
+const route = useRoute();
+
+const readonly = !('admin' in route.query);
+
+const { data: groups } = await useFetch<{ data: Group[] }>(`${$config.public.API_URL}/groups`, {
+  transform: (response: { data: Group[] }) => response.data,
+});
+const tab = groups.value?.find(t => t.id === Number(route.params.group));
+
+const { data: criteria } = await useFetch<{ data: Criteria[] }>(`${$config.public.API_URL}/groups/${tab.id}/criteria`, {
+  transform: (response: { data: Criteria[] }) => response.data,
+});
+
+const { data: students } = await useFetch<{ data: Student[] }>(`${$config.public.API_URL}/groups/${tab.id}/students`, {
+  transform: (response: { data: Student[] }) => response.data,
+});
+
+const { data: lessons } = await useFetch<{ data: Lesson[] }>(`${$config.public.API_URL}/groups/${tab.id}/lessons?page=1&per_page=100`, {
+  transform: (response: { data: Lesson[] }) => response.data.map((lesson) => {
+      lesson.dates = lesson.dates.map(d => new Date(d));
+      return lesson;
+    }),
+});
+
+const addLesson = async () => {
+  try {
+    const { data } = await $fetch<{ data: { 'lesson_id': number } }>(`${$config.public.API_URL}/groups/${tab.id}/lessons`, { method: 'POST' });
+    lessons.value.unshift({
+      id: Number(data['lesson_id']),
+      dates: [],
+      students: students.value.map(s => ({
+        id: s.id,
+        name: s.name,
+        progress: 0,
+        criteria: {}
+      })),
+    });
+  } catch (error) {
+    console.error("Ошибка при добавлении урока:", error);
+  }
+};
+
+const delLesson = async (lessonId: number) => {
+  try {
+    await $fetch(`${$config.public.API_URL}/groups/${tab.id}/lessons/${lessonId}`, { method: 'DELETE' });
+
+    lessons.value = lessons.value.filter((lesson) => lesson.id !== lessonId);
+  } catch (error) {
+    console.error("Ошибка при удалении урока:", error);
+  }
+};
+
+const changeCriteria = async (event: RatingChangeEvent, studentId: number, lessonId: number, critId: number) => {
+  let method = 'DELETE';
+  const url = `${$config.public.API_URL}/groups/${tab.id}/lessons/${lessonId}/criteria`;
+  const body = {
+    'student_id': studentId,
+    'criteria_id': critId
+  };
+
+  if (event.value && event.value > 0) {
+    method = 'PATCH';
+    body['score'] = event.value;
+  }
+
+  try {
+    const { data } = await $fetch<{ data: { progress: number } }>(url, { method, body: JSON.stringify(body) });
+
+    const lesson = lessons.value.find(l => l.id === lessonId);
+
+    if (lesson) {
+      const student = lesson.students.find(s => s.id === studentId);
+
+      if (student) {
+        student.progress = data.progress;
+      }
+    }
+  } catch (error) {
+    console.error("Ошибка при изменении данных:", error);
+  }
+};
+
+const onDateSelect = async (lessonId, dates: Date[]) => {
+  dates = dates?.map(d => d.toISOString()) ?? [];
+
+  try {
+    await $fetch(`${$config.public.API_URL}/groups/${tab.id}/lessons/${lessonId}/dates`, { method: 'PATCH', body: JSON.stringify({ dates }) });
+  } catch (error) {
+    console.error("Ошибка при изменении дат:", error);
+  }
+};
+
+const navigateToByGroup = (id: number): string => {
+  let url = `/groups/${id}`;
+
+  if ('admin' in route.query) {
+    url += `?admin`;
+  }
+
+  return navigateTo(url);
+}
+</script>
+
+<template>
+  <div class="main-wrapper">
+    <Tabs v-if="groups.length" :value="tab.id" scrollable>
+      <TabList>
+        <Tab v-for="group in groups" :key="group.name" :value="group.id" @click="navigateToByGroup(group.id)">
+          {{ group.name }}
+        </Tab>
+      </TabList>
+    </Tabs>
+
+    <div v-if="lessons.length === 0 && !readonly" class="button-container">
+      <Button @click="addLesson" severity="success" label="Add first lesson" />
+    </div>
+
+    <DataTable
+        v-for="(lesson, index) in lessons"
+        :key="lesson.id"
+        :value="lesson.students"
+        :style="{ marginBottom: '25px' }"
+        stripedRows
+    >
+      <template #header>
+        <div class="flex flex-wrap items-center justify-between gap-2" style="display: flex; justify-content: space-between; align-items: center;">
+          <FloatLabel variant="in">
+            <DatePicker
+                v-model="lesson.dates"
+                :manualInput="false"
+                :disabled="readonly"
+                @value-change="onDateSelect(lesson.id, $event)"
+                selectionMode="multiple"
+                inputId="in_label"
+                iconDisplay="input"
+                variant="filled"
+                dateFormat="d M"
+                showButtonBar
+                showIcon
+            />
+            <label for="in_label">Date</label>
+          </FloatLabel>
+          <Button v-if="index === 0 && !readonly" @click="addLesson" severity="success" icon="pi pi-plus" />
+          <Button v-else-if="!readonly" @click="delLesson(lesson.id)" icon="pi pi-trash" severity="danger" />
+        </div>
+      </template>
+      <Column field="name" header="ФИО" style="width: 15rem" sortable></Column>
+      <Column v-for="crit in criteria" :key="crit.id" :field="`crit_${crit.id}`" :header="crit.name">
+        <template #body="slotProps">
+          <Rating v-model="slotProps.data.criteria[crit.id]" :readonly="readonly" @change="changeCriteria($event, slotProps.data.id, lesson.id, crit.id)" :stars="crit.max_score" />
+        </template>
+      </Column>
+      <Column field="progress" header="% успеха" sortable></Column>
+    </DataTable>
+  </div>
+</template>
+
+<style scoped>
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+</style>

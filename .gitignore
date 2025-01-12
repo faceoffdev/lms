@@ -1,0 +1,7 @@
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Docker
+api/.env

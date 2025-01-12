@@ -1,0 +1,40 @@
+networks:
+  proxy:
+    name: proxy
+    external: true
+  workspace:
+    name: workspace
+    external: true
+
+services:
+  app:
+    build:
+      context: app
+      dockerfile: .docker/web-dev/Dockerfile
+    restart: "no"
+    tty: true
+    environment:
+      - API_URL=http://lms-api.vadym.loc
+    networks:
+      - proxy
+    volumes:
+      - ./app:/app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.lms.rule=HostRegexp(`lms.{host:.+}`)
+      - traefik.http.services.lms.loadbalancer.server.port=3000
+
+  api:
+    build:
+      context: api
+      dockerfile: .docker/web-dev/Dockerfile
+    restart: "no"
+    networks:
+      - workspace
+      - proxy
+    volumes:
+        - ./api/:/app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.lms-api.rule=HostRegexp(`lms-api.{host:.+}`)
+      - traefik.http.services.lms-api.loadbalancer.server.port=8080
