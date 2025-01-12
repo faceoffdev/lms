@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./app
-          file: ./.docker/web/Dockerfile
+          file: ./app/.docker/web/Dockerfile
           tags: ghcr.io/${{ github.repository }}/app:latest
           platforms: linux/amd64
           push: true
@@ -59,7 +59,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./api
-          file: ./.docker/web/Dockerfile
+          file: ./api/.docker/web/Dockerfile
           tags: ghcr.io/${{ github.repository }}/api:latest
           platforms: linux/amd64
           push: true
