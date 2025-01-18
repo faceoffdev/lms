@@ -6,8 +6,6 @@ body {
     min-height: 100vh;
     max-width: 100vw;
     color: #fff;
-    background: radial-gradient(135.35% 140.89% at 107.72% -60.35%, rgba(65, 184, 131, 0.4) 0%, rgba(5, 4, 31, 0) 100%),
-        #121116;
     margin: 0 auto;
     width: 100%;
     font-size: 14px;
