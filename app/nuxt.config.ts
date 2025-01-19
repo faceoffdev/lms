@@ -22,7 +22,15 @@ export default defineNuxtConfig({
     "primeicons/primeicons.css",
   ],
 
-  modules: ["@primevue/nuxt-module"],
+  modules: ["@primevue/nuxt-module", "@sentry/nuxt/module"],
+
+  sentry: {
+    sourceMapsUploadOptions: {
+      org: "faceoff",
+      project: "lms",
+      authToken: "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",
+    },
+  },
 
   primevue: {
     options: {
