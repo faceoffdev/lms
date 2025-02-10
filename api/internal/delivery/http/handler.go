@@ -13,10 +13,11 @@ type Handler struct {
 	criteriaUC usecase.CriteriaUseCase
 	studentsUC usecase.StudentUseCase
 	lessonUC   usecase.LessonUseCase
+	ratingUC   usecase.RatingUseCase
 }
 
-func NewHandler(guc usecase.GroupUseCase, cus usecase.CriteriaUseCase, suc usecase.StudentUseCase, luc usecase.LessonUseCase) *Handler {
-	return &Handler{groupUC: guc, criteriaUC: cus, studentsUC: suc, lessonUC: luc}
+func NewHandler(guc usecase.GroupUseCase, cus usecase.CriteriaUseCase, suc usecase.StudentUseCase, luc usecase.LessonUseCase, ruc usecase.RatingUseCase) *Handler {
+	return &Handler{groupUC: guc, criteriaUC: cus, studentsUC: suc, lessonUC: luc, ratingUC: ruc}
 }
 
 func (h *Handler) GetGroups(w http.ResponseWriter, r *http.Request) {
@@ -207,5 +208,17 @@ func (h *Handler) DeleteLessonScore(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = json.NewEncoder(w).Encode(ResponseData{
 		Data: setLessonScoreResponse{Progress: progress},
+	})
+}
+
+func (h *Handler) GetRatings(w http.ResponseWriter, r *http.Request) {
+	data, err := h.ratingUC.GetRatings(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_ = json.NewEncoder(w).Encode(&ResponseData{
+		Data: data,
 	})
 }

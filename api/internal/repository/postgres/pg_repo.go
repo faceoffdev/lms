@@ -317,3 +317,21 @@ func (r *postgresRepo) getScoresByStudent(ctx context.Context, groupId, lessonId
 	}
 	return progress, rows.Err()
 }
+
+func (r *postgresRepo) GetRatings(ctx context.Context) ([]entity.Rating, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT * FROM ratings`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]entity.Rating, 0, 100)
+	for rows.Next() {
+		var r entity.Rating
+		if err := rows.Scan(&r.Name, &r.GroupName, &r.Type, &r.Month, &r.Performance); err != nil {
+			return nil, err
+		}
+		users = append(users, r)
+	}
+	return users, rows.Err()
+}

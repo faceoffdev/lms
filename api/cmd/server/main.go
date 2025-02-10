@@ -24,8 +24,9 @@ func main() {
 	criteriaUC := usecase.NewCriteriaUseCase(repo)
 	studentUC := usecase.NewStudentUseCase(repo)
 	lessonUC := usecase.NewLessonUseCase(repo)
+	ratingUC := usecase.NewRatingUseCase(repo)
 
-	handler := httpDelivery.NewHandler(groupUC, criteriaUC, studentUC, lessonUC)
+	handler := httpDelivery.NewHandler(groupUC, criteriaUC, studentUC, lessonUC, ratingUC)
 
 	mux := httpDelivery.NewHTTPServer(handler)
 
