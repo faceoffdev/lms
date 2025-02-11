@@ -31,42 +31,43 @@ const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$conf
       </div>
 
       <div class="flex flex-col items-center mt-3 border-t border-gray-700">
-        <Button as="router-link" icon="pi pi-book" variant="text" severity="secondary" class="mt-3" to="/groups/1" />
-        <Button icon="pi pi-chart-bar" variant="text" class="mt-3" />
+        <Button as="router-link" icon="pi pi-book" variant="text" severity="secondary" class="mt-3" to="/groups/1"/>
+        <Button icon="pi pi-chart-bar" variant="text" class="mt-3"/>
       </div>
     </div>
 
     <card class="w-screen">
       <template #title>🏆 Rating</template>
       <template #content>
-      <DataTable
-          v-model:filters="filters"
-          :value="students"
-          :rows="15"
-          dataKey="id"
-          filterDisplay="row"
-          paginator
-      >
-        <template #empty> No students found.</template>
-        <template #loading> Loading students data. Please wait.</template>
-        <Column :showFilterMenu="false" field="name" header="Name" style="max-width: 4rem">
-          <template #filter="{ filterModel, filterCallback }">
-            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Search by name"/>
-          </template>
-        </Column>
-        <Column :showFilterMenu="false" field="group" header="Group" style="max-width: 4rem">
-          <template #filter="{ filterModel, filterCallback }">
-            <MultiSelect
-                v-model="filterModel.value"
-                :options="groups"
-                :max-selected-labels="2"
-                @change="filterCallback()"
-                placeholder="Any"
-            />
-          </template>
-        </Column>
-        <Column field="performance" header="January"></Column>
-      </DataTable>
+        <DataTable
+            v-model:filters="filters"
+            :value="students"
+            :rows="15"
+            dataKey="id"
+            filterDisplay="row"
+            paginator
+        >
+          <template #empty> No students found.</template>
+          <template #loading> Loading students data. Please wait.</template>
+          <Column :showFilterMenu="false" field="name" header="Name" style="max-width: 4rem">
+            <template #filter="{ filterModel, filterCallback }">
+              <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
+                         placeholder="Search by name"/>
+            </template>
+          </Column>
+          <Column :showFilterMenu="false" field="group" header="Group" style="max-width: 4rem">
+            <template #filter="{ filterModel, filterCallback }">
+              <MultiSelect
+                  v-model="filterModel.value"
+                  :options="groups"
+                  :max-selected-labels="2"
+                  @change="filterCallback()"
+                  placeholder="Any"
+              />
+            </template>
+          </Column>
+          <Column field="performance" header="January"></Column>
+        </DataTable>
       </template>
     </card>
   </div>
