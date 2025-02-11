@@ -36,7 +36,9 @@ const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$conf
       </div>
     </div>
 
-    <div class="w-screen">
+    <card class="w-screen">
+      <template #title>🏆 Rating</template>
+      <template #content>
       <DataTable
           v-model:filters="filters"
           :value="students"
@@ -45,11 +47,6 @@ const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$conf
           filterDisplay="row"
           paginator
       >
-        <template #header>
-          <div class="flex flex-wrap gap-2 items-center justify-between">
-            <h1 class="m-0">🏆 Rating</h1>
-          </div>
-        </template>
         <template #empty> No students found.</template>
         <template #loading> Loading students data. Please wait.</template>
         <Column :showFilterMenu="false" field="name" header="Name" style="max-width: 4rem">
@@ -70,7 +67,8 @@ const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$conf
         </Column>
         <Column field="performance" header="January"></Column>
       </DataTable>
-    </div>
+      </template>
+    </card>
   </div>
 </template>
 
