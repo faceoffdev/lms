@@ -24,8 +24,7 @@ body {
 }
 
 .main-wrapper {
-    background-image: url("background.svg");
-    background-repeat: no-repeat;
-    /* background-attachment: fixed; */
-    background-size: contain;
+    background: var(--p-content-background);
+    overflow-x: hidden;
+    flex-grow: 1;
 }

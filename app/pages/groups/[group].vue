@@ -113,10 +113,10 @@ const navigateToByGroup = (id: number): string => {
 </script>
 
 <template>
-  <div class="flex h-screen space-x-1">
+  <div class="flex w-screen h-screen space-x-1">
     <div class="flex flex-col items-center min-w-16 h-full overflow-hidden text-gray-400">
       <div class="flex items-center justify-center mt-3">
-        <i class="pi pi-graduation-cap" style="font-size: 2rem"/>
+        <i class="pi pi-graduation-cap" style="font-size: 2rem; color: #298a67"/>
       </div>
 
       <div class="flex flex-col items-center mt-3 border-t border-gray-700">
