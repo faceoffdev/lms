@@ -22,7 +22,7 @@ interface Student {
     criteria: Record<number, number>;
 }
 
-type StudentPerformance = {
+interface StudentPerformance {
     name: string;
     group: string;
     type: string;

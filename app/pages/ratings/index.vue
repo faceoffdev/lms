@@ -19,7 +19,7 @@ const { data: students } = await useFetch<{ data: StudentPerformance[] }>(`${$co
     group: student['group_name'],
     type: student['type'],
     performance: `${student['performance_percentage']}%`,
-  })),
+  }) as StudentPerformance),
 });
 </script>
 
