@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     "primeicons/primeicons.css",
   ],
 
-  modules: ["@primevue/nuxt-module"],
+  modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss"],
 
   primevue: {
     options: {
