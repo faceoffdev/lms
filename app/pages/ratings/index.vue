@@ -1,28 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
-import { CustomerService } from '@/service/CustomerService';
 
 const { $config } = useNuxtApp();
 
 const filters = ref({
   name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  group: { value: null, matchMode: FilterMatchMode.EQUALS },
+  group: { value: null, matchMode: FilterMatchMode.IN },
 });
-
-const students = ref();
 
 const { data: groups } = await useFetch<{ data: string[] }>(`${$config.public.API_URL}/groups`, {
   transform: (response: { data: string[] }) => response.data.map(group => group.name),
 });
 
-const loading = ref(true);
-
-onMounted(() => {
-  CustomerService.getCustomersMedium().then(data => {
-    students.value = data;
-    loading.value = false;
-  });
+const { data: students } = await useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`, {
+  transform: (response: { data: StudentPerformance[] }) => response.data.map(student => ({
+    name: student['student_name'],
+    group: student['group_name'],
+    type: student['type'],
+    performance: `${student['performance_percentage']}%`,
+  })),
 });
 </script>
 
@@ -31,7 +28,6 @@ onMounted(() => {
     <DataTable
         v-model:filters="filters"
         :value="students"
-        :loading="loading"
         :rows="15"
         dataKey="id"
         filterDisplay="row"
@@ -51,9 +47,10 @@ onMounted(() => {
       </Column>
       <Column :showFilterMenu="false" field="group" header="Group" style="max-width: 4rem">
         <template #filter="{ filterModel, filterCallback }">
-          <Select
+          <MultiSelect
               v-model="filterModel.value"
               :options="groups"
+              :max-selected-labels="2"
               @change="filterCallback()"
               placeholder="Any"
           />

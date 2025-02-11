@@ -319,7 +319,7 @@ func (r *postgresRepo) getScoresByStudent(ctx context.Context, groupId, lessonId
 }
 
 func (r *postgresRepo) GetRatings(ctx context.Context) ([]entity.Rating, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT * FROM ratings`)
+	rows, err := r.db.QueryContext(ctx, `SELECT student_name, group_name, type, month, performance_percentage FROM ratings`)
 	if err != nil {
 		return nil, err
 	}
