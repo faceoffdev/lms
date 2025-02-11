@@ -35,7 +35,7 @@ const { data: students } = await useFetch<{ data: StudentPerformance[] }>(`${$co
     >
       <template #header>
         <div class="flex flex-wrap gap-2 items-center justify-between">
-          <h4 class="m-0">Rating</h4>
+          <h2 class="m-0">🏆 Rating</h2>
         </div>
       </template>
       <template #empty> No students found.</template>

@@ -14,6 +14,12 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    server: {
+      allowedHosts: true,
+    },
+  },
+
   devtools: { enabled: true },
   ssr: false,
 
