@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PageState, RatingChangeEvent } from "primevue";
+import { range } from "@antfu/utils";
 
 const {$config} = useNuxtApp();
 const route = useRoute();
@@ -12,7 +13,10 @@ const criteria = ref<Criteria[]>([]);
 const students = ref<Student[]>([]);
 const lessons = ref<Lesson[]>([]);
 
+const loading = ref(false);
+
 const loadData = async () => {
+  loading.value = true;
   try {
     const [groupsResponse, criteriaResponse, studentsResponse, lessonsResponse] = await Promise.all([
       useFetch<{ data: Group[] }>(`${$config.public.API_URL}/groups`),
@@ -32,6 +36,8 @@ const loadData = async () => {
     lessons.value = lessonsResponse.data.value;
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -147,6 +153,28 @@ const paginatedLessons = computed(() => {
       </div>
     </div>
     <div class="main-wrapper">
+      <Skeleton v-if="loading" width="100%" height="3.5rem"/>
+      <DataTable
+          v-if="loading"
+          v-for="j in range(4)"
+          :key="j"
+          :value="range(5)"
+          :style="{ marginBottom: '25px' }"
+          stripedRows
+      >
+        <template #header>
+          <Skeleton width="16rem" height="4rem"/>
+        </template>
+        <Column v-for="i in range(7)" :key="i">
+          <template #header>
+            <Skeleton height="3rem"/>
+          </template>
+          <template #body>
+            <Skeleton/>
+          </template>
+        </Column>
+      </DataTable>
+
       <Tabs v-if="groups.length" :value="tab.id" scrollable>
         <TabList>
           <Tab v-for="group in groups" :key="group.name" :value="group.id" @click="navigateToByGroup(group.id)">
