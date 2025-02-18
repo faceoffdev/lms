@@ -6,39 +6,33 @@ const route = useRoute();
 
 const readonly = !('admin' in route.query);
 
-const {data: groups} = await useFetch<{ data: Group[] }>(`${$config.public.API_URL}/groups`, {
-  transform: (response: { data: Group[] }) => response.data,
-});
-const tab = groups.value?.find(t => t.id === Number(route.params.group));
+const tab = { id: Number(route.params.group) } as Group;
+const groups = ref<Group[]>([]);
+const criteria = ref<Criteria[]>([]);
+const students = ref<Student[]>([]);
+const lessons = ref<Lesson[]>([]);
 
-const {data: criteria} = await useFetch<{ data: Criteria[] }>(`${$config.public.API_URL}/groups/${tab.id}/criteria`, {
-  transform: (response: { data: Criteria[] }) => response.data,
-});
+const loadData = async () => {
+  try {
+    const [groupsResponse, criteriaResponse, studentsResponse, lessonsResponse] = await Promise.all([
+      useFetch<{ data: Group[] }>(`${$config.public.API_URL}/groups`),
+      useFetch<{ data: Criteria[] }>(`${$config.public.API_URL}/groups/${tab.id}/criteria`),
+      useFetch<{ data: Student[] }>(`${$config.public.API_URL}/groups/${tab.id}/students`),
+      useFetch<{ data: Lesson[] }>(`${$config.public.API_URL}/groups/${tab.id}/lessons`, {
+        transform: (response: { data: Lesson[] }) => response.data.map((lesson) => {
+          lesson.dates = lesson.dates.map(d => new Date(d));
+          return lesson;
+        }),
+      }),
+    ]);
 
-const {data: students} = await useFetch<{ data: Student[] }>(`${$config.public.API_URL}/groups/${tab.id}/students`, {
-  transform: (response: { data: Student[] }) => response.data,
-});
-
-const {data: lessons} = await useFetch<{
-  data: Lesson[]
-}>(`${$config.public.API_URL}/groups/${tab.id}/lessons?page=1&per_page=100`, {
-  transform: (response: { data: Lesson[] }) => response.data.map((lesson) => {
-    lesson.dates = lesson.dates.map(d => new Date(d));
-    return lesson;
-  }),
-});
-
-const currentPage = ref(1);
-const lessonsPerPage = 3;
-const paginatedLessons = computed(() => {
-  const start = (currentPage.value - 1) * lessonsPerPage;
-  const end = start + lessonsPerPage;
-
-  return lessons.value.slice(start, end);
-});
-
-const handlePageChange = (event: PageState) => {
-  currentPage.value = event.page + 1;
+    groups.value = groupsResponse.data.value['data'];
+    criteria.value = criteriaResponse.data.value['data'];
+    students.value = studentsResponse.data.value['data'];
+    lessons.value = lessonsResponse.data.value;
+  } catch (error) {
+    console.error('Ошибка загрузки данных:', error);
+  }
 };
 
 const addLesson = async () => {
@@ -123,6 +117,21 @@ const navigateToByGroup = (id: number): string => {
 
   return navigateTo(url);
 }
+
+const handlePageChange = (event: PageState) => {
+  currentPage.value = event.page + 1;
+};
+
+loadData();
+
+const currentPage = ref(1);
+const lessonsPerPage = 3;
+const paginatedLessons = computed(() => {
+  const start = (currentPage.value - 1) * lessonsPerPage;
+  const end = start + lessonsPerPage;
+
+  return lessons.value.slice(start, end);
+});
 </script>
 
 <template>
@@ -146,7 +155,7 @@ const navigateToByGroup = (id: number): string => {
         </TabList>
       </Tabs>
 
-      <div v-if="lessons.length === 0 && !readonly" class="button-container">
+      <div v-if="groups.length > 0 && lessons.length === 0 && !readonly" class="button-container">
         <Button @click="addLesson" severity="success" label="Add first lesson"/>
       </div>
 
