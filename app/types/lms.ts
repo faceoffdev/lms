@@ -21,3 +21,10 @@ interface Student {
     progress: number;
     criteria: Record<number, number>;
 }
+
+interface StudentPerformance {
+    name: string;
+    group: string;
+    type: string;
+    performance: number;
+}

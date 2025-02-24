@@ -14,6 +14,7 @@ func NewHTTPServer(h *Handler) http.Handler {
 	mux.HandleFunc("PATCH /groups/{group}/lessons/{lesson}/dates", h.ChangeLessonDates)
 	mux.HandleFunc("PATCH /groups/{group}/lessons/{lesson}/criteria", h.UpdateLessonScore)
 	mux.HandleFunc("DELETE /groups/{group}/lessons/{lesson}/criteria", h.DeleteLessonScore)
+	mux.HandleFunc("GET /ratings", h.GetRatings)
 
 	return JSONMiddleware(corsMiddleware(mux))
 }

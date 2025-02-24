@@ -1,6 +1,8 @@
 ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-slim AS build
 
+RUN npm install -g corepack@latest
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -14,7 +16,7 @@ RUN pnpm install --shamefully-hoist
 
 COPY . ./
 
-ARG API_URL=https://lms-api.tradeonix.ru
+ARG API_URL=https://lms-api.edutracking.ru
 
 RUN pnpm run build
 

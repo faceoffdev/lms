@@ -27,6 +27,10 @@ type LessonRepository interface {
 	DeleteLessonScore(ctx context.Context, groupId, lessonId, studentId, criteriaId int) (int, error)
 }
 
+type RatingRepository interface {
+	GetRatings(ctx context.Context) ([]entity.Rating, error)
+}
+
 type LessonWithScores struct {
 	entity.Lesson
 	Students []StudentWithScores `json:"students"`
