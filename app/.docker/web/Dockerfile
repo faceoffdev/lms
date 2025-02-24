@@ -16,7 +16,7 @@ RUN pnpm install --shamefully-hoist
 
 COPY . ./
 
-ARG API_URL=https://lms-api.tradeonix.ru
+ARG API_URL=https://lms-api.edutracking.ru
 
 RUN pnpm run build
 
