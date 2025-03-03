@@ -9,7 +9,7 @@ const filters = ref({
   group: {value: null, matchMode: FilterMatchMode.IN},
 });
 
-const groups = ref<string[]>([]);
+const groups = ref<string>([]);
 const students = ref<StudentPerformance[]>([]);
 
 const loadData = async () => {
@@ -18,23 +18,25 @@ const loadData = async () => {
       useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`),
     ]);
 
-    const tmp = {};
+    const studentRating = {};
+    const groupNames = new Set<string>();
     ratingsResponse.data.value['data'].forEach((rating) => {
       const key = `${rating['group_name']}_${rating['student_name']}`;
-      if (!tmp[key]) {
-        groups.value.push(rating['group_name']);
+      if (!studentRating[key]) {
+        groupNames.add(rating['group_name']);
 
-        tmp[key] = {
+        studentRating[key] = {
           name: rating['student_name'],
           group: rating['group_name'],
           performance: {},
         };
       }
 
-      tmp[key].performance[rating['month'].trim()] = `${rating['performance_percentage']}%`;
+      studentRating[key].performance[rating['month'].trim()] = `${rating['performance_percentage']}%`;
     });
 
-    students.value = Object.values(tmp);
+    students.value = Object.values(studentRating);
+    groups.value = [...groupNames];
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
   }
