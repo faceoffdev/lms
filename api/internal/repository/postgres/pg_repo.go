@@ -23,7 +23,7 @@ func NewPostgresRepo(db *sql.DB) *postgresRepo {
 }
 
 func (r *postgresRepo) GetAllGroups(ctx context.Context) ([]entity.Group, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, name FROM groups`)
+	rows, err := r.db.QueryContext(ctx, `SELECT id, name FROM groups order by sort`)
 	if err != nil {
 		return nil, err
 	}
