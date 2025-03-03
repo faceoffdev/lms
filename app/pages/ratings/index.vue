@@ -14,19 +14,16 @@ const students = ref<StudentPerformance[]>([]);
 
 const loadData = async () => {
   try {
-    const [groupsResponse, ratingsResponse] = await Promise.all([
-      useFetch<{ data: Group[] }>(`${$config.public.API_URL}/groups`, {
-        transform: (response: { data: Group[] }) => response.data.map((group) => group.name),
-      }),
+    const [ratingsResponse] = await Promise.all([
       useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`),
     ]);
-
-    groups.value = groupsResponse.data.value;
 
     const tmp = {};
     ratingsResponse.data.value['data'].forEach((rating) => {
       const key = `${rating['group_name']}_${rating['student_name']}`;
       if (!tmp[key]) {
+        groups.value.push(rating['group_name']);
+
         tmp[key] = {
           name: rating['student_name'],
           group: rating['group_name'],
