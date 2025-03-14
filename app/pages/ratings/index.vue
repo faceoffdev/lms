@@ -9,18 +9,40 @@ const filters = ref({
   group: {value: null, matchMode: FilterMatchMode.IN},
 });
 
-const {data: groups} = await useFetch<{ data: string[] }>(`${$config.public.API_URL}/groups`, {
-  transform: (response: { data: string[] }) => response.data.map(group => group.name),
-});
+const groups = ref<string>([]);
+const students = ref<StudentPerformance[]>([]);
 
-const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`, {
-  transform: (response: { data: StudentPerformance[] }) => response.data.map(student => ({
-    name: student['student_name'],
-    group: student['group_name'],
-    type: student['type'],
-    performance: `${student['performance_percentage']}%`,
-  }) as StudentPerformance),
-});
+const loadData = async () => {
+  try {
+    const [ratingsResponse] = await Promise.all([
+      useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`),
+    ]);
+
+    const studentRating = {};
+    const groupNames = new Set<string>();
+    ratingsResponse.data.value['data'].forEach((rating) => {
+      const key = `${rating['group_name']}_${rating['student_name']}`;
+      if (!studentRating[key]) {
+        groupNames.add(rating['group_name']);
+
+        studentRating[key] = {
+          name: rating['student_name'],
+          group: rating['group_name'],
+          performance: {},
+        };
+      }
+
+      studentRating[key].performance[rating['month'].trim()] = `${rating['performance_percentage']}%`;
+    });
+
+    students.value = Object.values(studentRating);
+    groups.value = [...groupNames];
+  } catch (error) {
+    console.error('Ошибка загрузки данных:', error);
+  }
+};
+
+loadData();
 </script>
 
 <template>
@@ -66,7 +88,16 @@ const {data: students} = await useFetch<{ data: StudentPerformance[] }>(`${$conf
               />
             </template>
           </Column>
-          <Column field="performance" header="January"></Column>
+          <Column header="January">
+            <template #body="slotProps">
+              {{ slotProps.data.performance['January'] }}
+            </template>
+          </Column>
+          <Column header="February">
+            <template #body="slotProps">
+              {{ slotProps.data.performance['February'] }}
+            </template>
+          </Column>
         </DataTable>
       </template>
     </card>

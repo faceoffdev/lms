@@ -25,6 +25,5 @@ interface Student {
 interface StudentPerformance {
     name: string;
     group: string;
-    type: string;
-    performance: number;
+    performance: Record<string, string>;
 }
