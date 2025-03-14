@@ -25,5 +25,5 @@ interface Student {
 interface StudentPerformance {
     name: string;
     group: string;
-    performance: Record<string, string>;
+    performance: Record<'common'|'group'|'club', string>;
 }

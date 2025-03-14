@@ -28,7 +28,7 @@ type LessonRepository interface {
 }
 
 type RatingRepository interface {
-	GetRatings(ctx context.Context) ([]entity.Rating, error)
+	GetRatings(ctx context.Context, month string) ([]entity.Rating, error)
 }
 
 type LessonWithScores struct {

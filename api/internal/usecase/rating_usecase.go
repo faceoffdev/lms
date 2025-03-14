@@ -8,7 +8,7 @@ import (
 )
 
 type RatingUseCase interface {
-	GetRatings(ctx context.Context) ([]entity.Rating, error)
+	GetRatings(ctx context.Context, month string) ([]entity.Rating, error)
 }
 
 type ratingUseCase struct {
@@ -19,6 +19,6 @@ func NewRatingUseCase(r repository.RatingRepository) RatingUseCase {
 	return &ratingUseCase{ratingRepo: r}
 }
 
-func (uc *ratingUseCase) GetRatings(ctx context.Context) ([]entity.Rating, error) {
-	return uc.ratingRepo.GetRatings(ctx)
+func (uc *ratingUseCase) GetRatings(ctx context.Context, month string) ([]entity.Rating, error) {
+	return uc.ratingRepo.GetRatings(ctx, month)
 }

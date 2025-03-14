@@ -212,7 +212,9 @@ func (h *Handler) DeleteLessonScore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetRatings(w http.ResponseWriter, r *http.Request) {
-	data, err := h.ratingUC.GetRatings(r.Context())
+	month := r.URL.Query().Get("month")
+
+	data, err := h.ratingUC.GetRatings(r.Context(), month)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

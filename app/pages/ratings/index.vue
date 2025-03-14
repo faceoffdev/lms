@@ -9,40 +9,50 @@ const filters = ref({
   group: {value: null, matchMode: FilterMatchMode.IN},
 });
 
+const monthNames = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+const months = [];
+for (let i = new Date().getMonth() - 1; i >= 0; i--) {
+  months.push(monthNames[i]);
+}
+const currentMonth = ref<string>(months[0]);
+
 const groups = ref<string>([]);
 const students = ref<StudentPerformance[]>([]);
 
-const loadData = async () => {
+const loadData = async (month: string) => {
+  const getPerformance = (performance, type) => performance[type] ? `${performance[type]}%` : 'N/A';
+
+  const studentRatings = [] as StudentPerformance[];
+  const groupNames = new Set<string>();
+
   try {
-    const [ratingsResponse] = await Promise.all([
-      useFetch<{ data: StudentPerformance[] }>(`${$config.public.API_URL}/ratings`),
-    ]);
+    const ratingsResponse = await useFetch(`${$config.public.API_URL}/ratings?month=${month}`);
 
-    const studentRating = {};
-    const groupNames = new Set<string>();
     ratingsResponse.data.value['data'].forEach((rating) => {
-      const key = `${rating['group_name']}_${rating['student_name']}`;
-      if (!studentRating[key]) {
-        groupNames.add(rating['group_name']);
+      groupNames.add(rating['group_name']);
 
-        studentRating[key] = {
-          name: rating['student_name'],
-          group: rating['group_name'],
-          performance: {},
-        };
-      }
-
-      studentRating[key].performance[rating['month'].trim()] = `${rating['performance_percentage']}%`;
+      studentRatings.push({
+        name: rating['student_name'],
+        group: rating['group_name'],
+        performance: {
+          'common': getPerformance(rating['performance'], 'common'),
+          'group': getPerformance(rating['performance'], 'group'),
+          'club': getPerformance(rating['performance'], 'club'),
+        },
+      });
     });
-
-    students.value = Object.values(studentRating);
-    groups.value = [...groupNames];
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
   }
+
+  students.value = studentRatings;
+  groups.value = [...groupNames];
 };
 
-loadData();
+loadData(currentMonth.value);
 </script>
 
 <template>
@@ -57,16 +67,24 @@ loadData();
         <Button icon="pi pi-chart-bar" variant="text" class="mt-3"/>
       </div>
     </div>
-
     <card class="w-screen">
       <template #title>🏆 Rating</template>
       <template #content>
+        <Tabs v-model:value="currentMonth" scrollable>
+          <TabList>
+            <Tab v-for="m in months" :key="m" :value="m" @click="loadData(currentMonth)">
+              {{ m }}
+            </Tab>
+          </TabList>
+        </Tabs>
+
         <DataTable
             v-model:filters="filters"
             :value="students"
             :rows="15"
             dataKey="id"
             filterDisplay="row"
+            selectionMode="single"
             paginator
         >
           <template #empty> No students found.</template>
@@ -77,7 +95,7 @@ loadData();
                          placeholder="Search by name"/>
             </template>
           </Column>
-          <Column :showFilterMenu="false" field="group" header="Group" style="max-width: 4rem">
+          <Column :showFilterMenu="false" field="group" header="Group name" style="max-width: 4rem">
             <template #filter="{ filterModel, filterCallback }">
               <MultiSelect
                   v-model="filterModel.value"
@@ -88,14 +106,19 @@ loadData();
               />
             </template>
           </Column>
-          <Column header="January">
+          <Column header="Group">
             <template #body="slotProps">
-              {{ slotProps.data.performance['January'] }}
+              {{ slotProps.data.performance['group'] }}
             </template>
           </Column>
-          <Column header="February">
+          <Column header="Club">
             <template #body="slotProps">
-              {{ slotProps.data.performance['February'] }}
+              {{ slotProps.data.performance['club'] }}
+            </template>
+          </Column>
+          <Column header="Common">
+            <template #body="slotProps">
+              {{ slotProps.data.performance['common'] }}
             </template>
           </Column>
         </DataTable>
