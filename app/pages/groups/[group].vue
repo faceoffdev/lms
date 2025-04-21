@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PageState, RatingChangeEvent } from "primevue";
 import { range } from "@antfu/utils";
+import dayjs from "dayjs";
 
 const {$config} = useNuxtApp();
 const route = useRoute();
@@ -101,13 +102,13 @@ const changeCriteria = async (event: RatingChangeEvent, studentId: number, lesso
   }
 };
 
-const onDateSelect = async (lessonId, dates: Date[]) => {
-  dates = dates?.map(d => d.toISOString()) ?? [];
-
+const onDateSelect = async (lessonId: number, dates: Date[]) => {
   try {
     await $fetch(`${$config.public.API_URL}/groups/${tab.id}/lessons/${lessonId}/dates`, {
       method: 'PATCH',
-      body: JSON.stringify({dates})
+      body: JSON.stringify({
+        dates: dates?.map(d => dayjs(d).format('YYYY-MM-DD')) ?? []
+      })
     });
   } catch (error) {
     console.error("Ошибка при изменении дат:", error);

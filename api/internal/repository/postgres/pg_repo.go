@@ -318,20 +318,29 @@ func (r *postgresRepo) getScoresByStudent(ctx context.Context, groupId, lessonId
 	return progress, rows.Err()
 }
 
-func (r *postgresRepo) GetRatings(ctx context.Context) ([]entity.Rating, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT student_name, group_name, month, performance_percentage FROM ratings`)
+func (r *postgresRepo) GetRatings(ctx context.Context, month string) ([]entity.Rating, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT student_name, group_name, performance_by_type, common_performance FROM ratings WHERE month = $1 ORDER BY common_performance desc`, month)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	users := make([]entity.Rating, 0, 100)
+	ratings := make([]entity.Rating, 0, 150)
 	for rows.Next() {
-		var r entity.Rating
-		if err := rows.Scan(&r.Name, &r.GroupName, &r.Month, &r.Performance); err != nil {
+		var performanceByType []byte
+		var commonPerformance float32
+		rat := entity.Rating{Performance: make(map[string]float32, 3)}
+		if err := rows.Scan(&rat.Name, &rat.GroupName, &performanceByType, &commonPerformance); err != nil {
 			return nil, err
 		}
-		users = append(users, r)
+
+		if err := json.Unmarshal(performanceByType, &rat.Performance); err != nil {
+			log.Printf("JSON unmarshal failed: %v", err)
+		}
+
+		rat.Performance["common"] = commonPerformance
+
+		ratings = append(ratings, rat)
 	}
-	return users, rows.Err()
+	return ratings, rows.Err()
 }
