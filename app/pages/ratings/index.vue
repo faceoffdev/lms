@@ -9,14 +9,7 @@ const filters = ref({
   group: {value: null, matchMode: FilterMatchMode.IN},
 });
 
-const monthNames = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
-const months = [];
-for (let i = new Date().getMonth() - 1; i >= 0; i--) {
-  months.push(monthNames[i]);
-}
+const months = ['May', 'April', 'March', 'February', 'January'];
 const currentMonth = ref<string>(months[0]);
 
 const groups = ref<string>([]);
